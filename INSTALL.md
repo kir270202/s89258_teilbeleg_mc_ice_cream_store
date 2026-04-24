@@ -59,3 +59,5 @@ http://localhost:5000
 The GUI is web-based and runs in the browser. Therefore, `tkinter` is not required.
 
 Flask is the only external Python dependency. Libraries such as `pandas`, `numpy`, or `matplotlib` are not used.
+
+No extra dependency is required for the CSV export. The export uses the Python standard library and writes CSV files into `simulation_exports/`.

@@ -133,6 +133,12 @@ Aus der Weboberflaeche sollten folgende Werte in den Bericht uebernommen werden:
 
 Die Werte koennen direkt aus der Ergebnisansicht kopiert oder als Screenshot in den Bericht eingefuegt werden.
 
+## Export der Einzelläufe
+
+Nach jeder Simulation wird zusätzlich eine CSV-Datei im Ordner `simulation_exports/` erstellt. Jeder Monte-Carlo-Lauf wird dabei als eine eigene Zeile gespeichert. Die Datei verwendet ein Semikolon als Trennzeichen und kann direkt mit Excel geöffnet werden.
+
+Der Export hilft dabei, die Simulation genauer zu prüfen und bei Bedarf weitere Diagramme zu erstellen. Für den Bericht ist die CSV-Datei besonders nützlich als Anhang, weil die einzelnen Simulationsläufe nachvollziehbar dokumentiert sind.
+
 ## Hinweis zu den Daten
 
 Alle Werte sind vereinfachte Annahmen. Es handelt sich nicht um echte Geschaeftsdaten. Das Modell dient zur Demonstration der Monte-Carlo-Methode und nicht als echte betriebswirtschaftliche Prognose.

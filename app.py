@@ -5,10 +5,13 @@ The web application uses Flask for a simple browser GUI. The simulation itself
 uses only basic Python functions, loops, dictionaries, and random numbers.
 """
 
+import csv
+import os
 import random
 import statistics
+from datetime import datetime
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 
 
 app = Flask(__name__)
@@ -50,6 +53,8 @@ DEFAULT_PARAMS = {
     "fixed_cost_per_day": 80.0,
     "seed": "",
 }
+
+EXPORT_FOLDER = "simulation_exports"
 
 
 def get_month_from_day(day):
@@ -158,6 +163,42 @@ def simulate_year(params):
     }
 
 
+def save_run_results_to_csv(run_results, params):
+    """Save all individual Monte Carlo runs to an Excel-compatible CSV file."""
+    os.makedirs(EXPORT_FOLDER, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = os.path.join(EXPORT_FOLDER, f"simulation_results_{timestamp}.csv")
+
+    columns = [
+        "run_number",
+        "yearly_profit",
+        "yearly_revenue",
+        "yearly_customers",
+        "yearly_scoops",
+        "Vanille",
+        "Schokolade",
+        "Erdbeere",
+        "Zitrone",
+        "Stracciatella",
+        "Pistazie",
+    ]
+
+    with open(filename, "w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.writer(csv_file, delimiter=";")
+        writer.writerow([f"# runs={params['runs']}"])
+        writer.writerow([f"# price_per_scoop={params['price_per_scoop']}"])
+        writer.writerow([f"# cost_per_scoop={params['cost_per_scoop']}"])
+        writer.writerow([f"# fixed_cost_per_day={params['fixed_cost_per_day']}"])
+        writer.writerow([f"# seed={params['seed']}"])
+        writer.writerow(columns)
+
+        for row in run_results:
+            writer.writerow([row[column] for column in columns])
+
+    return filename
+
+
 def run_monte_carlo(params):
     """Run many yearly simulations and calculate average result values."""
     if params["seed"] != "":
@@ -170,13 +211,27 @@ def run_monte_carlo(params):
     customers = []
     scoops = []
     total_flavors = {flavor: 0 for flavor in FLAVOR_WEIGHTS}
+    all_run_results = []
 
-    for _ in range(params["runs"]):
+    for run_number in range(1, params["runs"] + 1):
         result = simulate_year(params)
         profits.append(result["profit"])
         revenues.append(result["revenue"])
         customers.append(result["customers"])
         scoops.append(result["scoops"])
+        all_run_results.append({
+            "run_number": run_number,
+            "yearly_profit": result["profit"],
+            "yearly_revenue": result["revenue"],
+            "yearly_customers": result["customers"],
+            "yearly_scoops": result["scoops"],
+            "Vanille": result["flavors"]["Vanille"],
+            "Schokolade": result["flavors"]["Schokolade"],
+            "Erdbeere": result["flavors"]["Erdbeere"],
+            "Zitrone": result["flavors"]["Zitrone"],
+            "Stracciatella": result["flavors"]["Stracciatella"],
+            "Pistazie": result["flavors"]["Pistazie"],
+        })
 
         for flavor, count in result["flavors"].items():
             total_flavors[flavor] += count
@@ -186,6 +241,7 @@ def run_monte_carlo(params):
         average_flavors[flavor] = count / params["runs"]
 
     most_popular_flavor = max(total_flavors, key=total_flavors.get)
+    csv_file = save_run_results_to_csv(all_run_results, params)
 
     return {
         "average_profit": statistics.mean(profits),
@@ -196,6 +252,7 @@ def run_monte_carlo(params):
         "min_profit": min(profits),
         "max_profit": max(profits),
         "average_flavors": average_flavors,
+        "csv_filename": os.path.basename(csv_file),
     }
 
 
@@ -280,6 +337,12 @@ def index():
         flavor_rows=flavor_rows,
         format_money=format_money,
     )
+
+
+@app.route("/download/<filename>")
+def download_file(filename):
+    """Download a generated CSV export file."""
+    return send_from_directory(EXPORT_FOLDER, filename, as_attachment=True)
 
 
 if __name__ == "__main__":

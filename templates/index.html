@@ -68,6 +68,21 @@
             background: #1f5288;
         }
 
+        .download-button {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 10px 18px;
+            border-radius: 4px;
+            background: #2764a5;
+            color: white;
+            font-size: 15px;
+            text-decoration: none;
+        }
+
+        .download-button:hover {
+            background: #1f5288;
+        }
+
         .error {
             background: #ffe8e8;
             border: 1px solid #db9b9b;
@@ -251,6 +266,10 @@
 
                 <h2>Interpretation</h2>
                 <p>{{ interpretation }}</p>
+
+                <h2>Export der Einzelläufe</h2>
+                <p>Die Ergebnisse jedes Monte-Carlo-Laufs wurden zusätzlich als CSV-Datei gespeichert. Die Datei kann mit Excel geöffnet werden.</p>
+                <a class="download-button" href="/download/{{ result.csv_filename }}">CSV-Datei herunterladen</a>
             </div>
         {% endif %}
     </div>
