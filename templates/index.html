@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Monte-Carlo Eisgeschaeft</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        .page {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        h2 {
+            margin-top: 28px;
+            font-size: 21px;
+        }
+
+        .box {
+            background: white;
+            border: 1px solid #d7dde3;
+            border-radius: 6px;
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 230px 220px;
+            gap: 10px 14px;
+            align-items: center;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid #b9c1ca;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+
+        button {
+            margin-top: 16px;
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 4px;
+            background: #2764a5;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1f5288;
+        }
+
+        .error {
+            background: #ffe8e8;
+            border: 1px solid #db9b9b;
+            color: #8a1f1f;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 18px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(240px, 1fr));
+            gap: 10px;
+        }
+
+        .result-item {
+            background: #eef3f8;
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .result-label {
+            display: block;
+            font-size: 13px;
+            color: #52606d;
+        }
+
+        .result-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border-bottom: 1px solid #d7dde3;
+            padding: 9px;
+            text-align: left;
+        }
+
+        th {
+            background: #eef3f8;
+        }
+
+        .number {
+            text-align: right;
+        }
+
+        .bar-row {
+            display: grid;
+            grid-template-columns: 140px 1fr 90px;
+            gap: 10px;
+            align-items: center;
+            margin: 9px 0;
+        }
+
+        .bar-background {
+            height: 20px;
+            background: #e4e9ef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            background: #67a65a;
+        }
+
+        .hint {
+            color: #52606d;
+            font-size: 14px;
+        }
+
+        @media (max-width: 700px) {
+            .form-grid,
+            .result-grid,
+            .bar-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>Monte-Carlo-Simulation: Kleines Eisgeschaeft</h1>
+
+        <div class="box">
+            <form method="post">
+                <div class="form-grid">
+                    <label for="runs">Monte-Carlo-Laeufe</label>
+                    <input id="runs" name="runs" type="number" min="1" value="{{ params.runs }}">
+
+                    <label for="price_per_scoop">Preis pro Kugel</label>
+                    <input id="price_per_scoop" name="price_per_scoop" type="text" value="{{ params.price_per_scoop }}">
+
+                    <label for="cost_per_scoop">Kosten pro Kugel</label>
+                    <input id="cost_per_scoop" name="cost_per_scoop" type="text" value="{{ params.cost_per_scoop }}">
+
+                    <label for="fixed_cost_per_day">Fixkosten pro Tag</label>
+                    <input id="fixed_cost_per_day" name="fixed_cost_per_day" type="text" value="{{ params.fixed_cost_per_day }}">
+
+                    <label for="seed">Zufalls-Seed optional</label>
+                    <input id="seed" name="seed" type="text" value="{{ params.seed }}">
+                </div>
+
+                <button type="submit">Simulation starten</button>
+            </form>
+        </div>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        {% if result %}
+            <div class="box">
+                <h2>Ergebnisse</h2>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <span class="result-label">Durchschnittlicher Jahresgewinn</span>
+                        <span class="result-value">{{ format_money(result.average_profit) }}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Durchschnittlicher Jahresumsatz</span>
+                        <span class="result-value">{{ format_money(result.average_revenue) }}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Durchschnittliche Kundenzahl pro Jahr</span>
+                        <span class="result-value">{{ "%.1f"|format(result.average_customers) }}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Durchschnittlich verkaufte Kugeln pro Jahr</span>
+                        <span class="result-value">{{ "%.1f"|format(result.average_scoops) }}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Beliebteste Eissorte</span>
+                        <span class="result-value">{{ result.most_popular_flavor }}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Kleinster simulierter Jahresgewinn</span>
+                        <span class="result-value">{{ format_money(result.min_profit) }}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Groesster simulierter Jahresgewinn</span>
+                        <span class="result-value">{{ format_money(result.max_profit) }}</span>
+                    </div>
+                </div>
+
+                <h2>Verkaufte Kugeln pro Eissorte</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Eissorte</th>
+                            <th class="number">Durchschnitt pro Jahr</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in flavor_rows %}
+                            <tr>
+                                <td>{{ row.name }}</td>
+                                <td class="number">{{ "%.1f"|format(row.average_count) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h2>Balkendiagramm</h2>
+                <p class="hint">Die Balken zeigen die durchschnittlich verkauften Kugeln pro Jahr relativ zur beliebtesten Sorte.</p>
+                {% for row in flavor_rows %}
+                    <div class="bar-row">
+                        <div>{{ row.name }}</div>
+                        <div class="bar-background">
+                            <div class="bar" style="width: {{ row.bar_width }}%;"></div>
+                        </div>
+                        <div class="number">{{ "%.1f"|format(row.average_count) }}</div>
+                    </div>
+                {% endfor %}
+
+                <h2>Interpretation</h2>
+                <p>{{ interpretation }}</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
