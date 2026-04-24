@@ -70,7 +70,7 @@ def random_temperature(month):
 
 def simulate_customer_count(temperature):
     """Simulate the customer count for one day depending on temperature."""
-    base_customers = 25
+    base_customers = 60
 
     if temperature < 10:
         factor = 0.4
