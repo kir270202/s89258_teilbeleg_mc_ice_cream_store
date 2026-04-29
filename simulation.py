@@ -159,6 +159,12 @@ def simulate_year(params):
     }
 
 
+# German Excel expects comma as decimal separator when opening CSV files directly.
+def format_csv_number(value, decimals=2):
+    """Format a number for German Excel CSV export."""
+    return f"{value:.{decimals}f}".replace(".", ",")
+
+
 def save_run_results_to_csv(run_results, params):
     """Save all individual Monte Carlo runs to an Excel-compatible CSV file."""
     os.makedirs(EXPORT_FOLDER, exist_ok=True)
@@ -180,17 +186,29 @@ def save_run_results_to_csv(run_results, params):
         "Pistazie",
     ]
 
-    with open(filename, "w", newline="", encoding="utf-8") as csv_file:
+    with open(filename, "w", newline="", encoding="utf-8-sig") as csv_file:
         writer = csv.writer(csv_file, delimiter=";")
         writer.writerow([f"# runs={params['runs']}"])
-        writer.writerow([f"# price_per_scoop={params['price_per_scoop']}"])
-        writer.writerow([f"# cost_per_scoop={params['cost_per_scoop']}"])
-        writer.writerow([f"# fixed_cost_per_day={params['fixed_cost_per_day']}"])
+        writer.writerow([f"# price_per_scoop={format_csv_number(params['price_per_scoop'])}"])
+        writer.writerow([f"# cost_per_scoop={format_csv_number(params['cost_per_scoop'])}"])
+        writer.writerow([f"# fixed_cost_per_day={format_csv_number(params['fixed_cost_per_day'])}"])
         writer.writerow([f"# seed={params['seed']}"])
         writer.writerow(columns)
 
         for row in run_results:
-            writer.writerow([row[column] for column in columns])
+            writer.writerow([
+                row["run_number"],
+                format_csv_number(row["yearly_profit"]),
+                format_csv_number(row["yearly_revenue"]),
+                row["yearly_customers"],
+                row["yearly_scoops"],
+                row["Vanille"],
+                row["Schokolade"],
+                row["Erdbeere"],
+                row["Zitrone"],
+                row["Stracciatella"],
+                row["Pistazie"],
+            ])
 
     return filename
 

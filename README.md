@@ -137,6 +137,8 @@ Die Werte koennen direkt aus der Ergebnisansicht kopiert oder als Screenshot in 
 
 Nach jeder Simulation wird zusätzlich eine CSV-Datei im Ordner `simulation_exports/` erstellt. Jeder Monte-Carlo-Lauf wird dabei als eine eigene Zeile gespeichert. Die Datei verwendet ein Semikolon als Trennzeichen und kann direkt mit Excel geöffnet werden.
 
+Die CSV-Datei wird mit Semikolon als Trennzeichen und Komma als Dezimaltrennzeichen gespeichert, damit sie in deutschem Excel korrekt geöffnet wird.
+
 Der Export hilft dabei, die Simulation genauer zu prüfen und bei Bedarf weitere Diagramme zu erstellen. Für den Bericht ist die CSV-Datei besonders nützlich als Anhang, weil die einzelnen Simulationsläufe nachvollziehbar dokumentiert sind.
 
 ## Hinweis zu den Daten
