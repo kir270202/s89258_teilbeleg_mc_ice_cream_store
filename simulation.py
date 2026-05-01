@@ -1,11 +1,3 @@
-"""
-Monte Carlo simulation of a small ice cream shop.
-
-The simulation uses basic Python functions, loops, dictionaries, and random
-numbers. It is intentionally independent from Flask so it can be tested or
-reused without the web UI.
-"""
-
 import csv
 import os
 import random
@@ -13,7 +5,7 @@ import statistics
 from datetime import datetime
 
 
-# Temperature ranges per month: month -> (minimum, maximum)
+# temperature ranges for the months
 MONTHLY_TEMPERATURES = {
     1: (0, 8),
     2: (1, 10),
@@ -29,10 +21,9 @@ MONTHLY_TEMPERATURES = {
     12: (0, 8),
 }
 
-# Number of days per month in a normal year.
 DAYS_PER_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-# Flavor weights. The numbers represent the assumed popularity.
+# assumed popularity of the flavours
 FLAVOR_WEIGHTS = {
     "Vanille": 22,
     "Schokolade": 20,
@@ -44,7 +35,7 @@ FLAVOR_WEIGHTS = {
 
 DEFAULT_PARAMS = {
     "runs": 1000,
-    "price_per_scoop": 1.50,
+    "price_per_scoop": 2.0,
     "cost_per_scoop": 0.45,
     "fixed_cost_per_day": 80.0,
     "seed": "",
@@ -54,7 +45,6 @@ EXPORT_FOLDER = "simulation_exports"
 
 
 def get_month_from_day(day):
-    """Return the month for a day of the year from 1 to 365."""
     days_counted = 0
     for month, days_in_month in enumerate(DAYS_PER_MONTH, start=1):
         days_counted += days_in_month
@@ -64,13 +54,11 @@ def get_month_from_day(day):
 
 
 def random_temperature(month):
-    """Generate a random temperature for the given month."""
     min_temp, max_temp = MONTHLY_TEMPERATURES[month]
     return random.uniform(min_temp, max_temp)
 
 
 def simulate_customer_count(temperature):
-    """Simulate the customer count for one day depending on temperature."""
     base_customers = 60
 
     if temperature < 10:
@@ -88,7 +76,6 @@ def simulate_customer_count(temperature):
 
 
 def simulate_portion_size(temperature):
-    """Randomly choose 1, 2, or 3 scoops for one customer."""
     random_value = random.random()
 
     if temperature < 15:
@@ -113,14 +100,12 @@ def simulate_portion_size(temperature):
 
 
 def choose_flavor():
-    """Choose one flavor using a weighted random choice."""
     flavors = list(FLAVOR_WEIGHTS.keys())
     weights = list(FLAVOR_WEIGHTS.values())
     return random.choices(flavors, weights=weights, k=1)[0]
 
 
 def simulate_year(params):
-    """Simulate one complete year and return the yearly results."""
     yearly_revenue = 0
     yearly_profit = 0
     yearly_customers = 0
@@ -159,14 +144,12 @@ def simulate_year(params):
     }
 
 
-# German Excel expects comma as decimal separator when opening CSV files directly.
+# needed for the german Excel
 def format_csv_number(value, decimals=2):
-    """Format a number for German Excel CSV export."""
     return f"{value:.{decimals}f}".replace(".", ",")
 
 
 def save_run_results_to_csv(run_results, params):
-    """Save all individual Monte Carlo runs to an Excel-compatible CSV file."""
     os.makedirs(EXPORT_FOLDER, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -214,7 +197,6 @@ def save_run_results_to_csv(run_results, params):
 
 
 def run_monte_carlo(params):
-    """Run many yearly simulations and calculate average result values."""
     if params["seed"] != "":
         random.seed(params["seed"])
     else:

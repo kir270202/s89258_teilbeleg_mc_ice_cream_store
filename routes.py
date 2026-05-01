@@ -1,5 +1,3 @@
-"""Flask routes and UI-specific helpers for the ice cream simulation app."""
-
 from flask import Blueprint, render_template, request, send_from_directory
 
 from simulation import DEFAULT_PARAMS, EXPORT_FOLDER, run_monte_carlo
@@ -9,27 +7,10 @@ ui = Blueprint("ui", __name__)
 
 
 def format_money(value):
-    """Format a number as a German-style Euro value."""
     return f"{value:,.2f} EUR".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-def create_interpretation(result):
-    """Create a short interpretation text for the result page."""
-    if result["average_profit"] >= 0:
-        profit_text = "Der durchschnittliche Jahresgewinn ist positiv."
-    else:
-        profit_text = "Der durchschnittliche Jahresgewinn ist negativ."
-
-    return (
-        f"{profit_text} Die warmen Monate sind im Modell besonders wichtig, "
-        "weil dann mehr Kunden kommen und groessere Portionen gekauft werden. "
-        f"Die beliebteste Eissorte ist {result['most_popular_flavor']}. "
-        "Die Zielfunktion lautet: maximaler durchschnittlicher Jahresgewinn."
-    )
-
-
 def parse_form_values(form):
-    """Read and validate form values from the web page."""
     params = DEFAULT_PARAMS.copy()
 
     try:
@@ -53,18 +34,15 @@ def parse_form_values(form):
 
 @ui.route("/", methods=["GET", "POST"])
 def index():
-    """Show the form and, after submit, the simulation results."""
     params = DEFAULT_PARAMS.copy()
     result = None
     error = ""
-    interpretation = ""
     flavor_rows = []
 
     if request.method == "POST":
         params, error = parse_form_values(request.form)
         if error == "":
             result = run_monte_carlo(params)
-            interpretation = create_interpretation(result)
 
             max_flavor_value = max(result["average_flavors"].values())
             sorted_flavors = sorted(result["average_flavors"].items(), key=lambda item: item[1], reverse=True)
@@ -85,7 +63,6 @@ def index():
         params=params,
         result=result,
         error=error,
-        interpretation=interpretation,
         flavor_rows=flavor_rows,
         format_money=format_money,
     )
@@ -93,5 +70,4 @@ def index():
 
 @ui.route("/download/<filename>")
 def download_file(filename):
-    """Download a generated CSV export file."""
     return send_from_directory(EXPORT_FOLDER, filename, as_attachment=True)
